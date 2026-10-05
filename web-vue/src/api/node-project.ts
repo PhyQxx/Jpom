@@ -105,7 +105,7 @@ export function editProject(params) {
     lib: params.lib,
     mainClass: params.mainClass,
     javaExtDirsCp: params.javaExtDirsCp,
-    jarPath: params.jarPath,
+    javaPath: params.javaPath,
     jvm: params.jvm,
     args: params.args,
     javaCopyIds: params.javaCopyIds,

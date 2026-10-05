@@ -1,5 +1,7 @@
 # 2.11.12.1 自定义 JAR 全路径移植
 
+本记录为首次部署历史。用户已更正需求为自定义 JDK/Java 路径，当前实现和部署见 [JAVA-PATH-DEPLOYMENT.md](JAVA-PATH-DEPLOYMENT.md)。
+
 - 官方基线：dromara/Jpom beta，34dd258c8f428f35b76d4ae7bf2e674c41b8bb30（commit beta 2.11.12.1）。
 - 分支：codex/jar-path-2.11.12.1。
 - Jar 模式新增可选 jarPath；使用绝对路径，留空继续扫描项目目录。现有校验不允许空格，文件须为 .jar。

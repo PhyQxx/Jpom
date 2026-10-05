@@ -288,9 +288,13 @@
         >
           <a-input v-model:value="temp.mainClass" :placeholder="$t('i18n_ef800ed466')" />
         </a-form-item>
-        <a-form-item v-show="temp.runMode === 'Jar'" :label="$t('i18n_62c7964148')" name="jarPath">
-          <template #help>{{ $t('i18n_9a7dfbd911') }}</template>
-          <a-input v-model:value="temp.jarPath" :placeholder="$t('i18n_3f05c3fd0e')" />
+        <a-form-item
+          v-show="javaModes.includes(temp.runMode) || javaModes.includes(linkProjectData.runMode)"
+          :label="$t('i18n_java_path_label')"
+          name="javaPath"
+        >
+          <template #help>{{ $t('i18n_java_path_help') }}</template>
+          <a-input v-model:value="temp.javaPath" :placeholder="$t('i18n_java_path_placeholder')" />
         </a-form-item>
         <a-form-item
           v-show="
@@ -403,7 +407,7 @@
           :label="$t('i18n_ce559ba296')"
           name="runCommand"
         >
-          <a-alert :message="temp.runCommand || $t('i18n_d81bb206a8')" type="success" />
+          <a-alert :message="displayRunCommand || $t('i18n_d81bb206a8')" type="success" />
         </a-form-item>
       </a-form>
     </a-spin>
@@ -513,6 +517,25 @@ export default {
     }
   },
   computed: {
+    displayRunCommand() {
+      const command = this.temp.runCommand || ''
+      if (
+        !command ||
+        !(this.javaModes.includes(this.temp.runMode) || this.javaModes.includes(this.linkProjectData.runMode))
+      ) {
+        return command
+      }
+      const javaPath = (this.temp.javaPath || '').trim()
+      const java = javaPath
+        ? javaPath.includes(' ')
+          ? `"${javaPath}"`
+          : javaPath
+        : command.startsWith('nohup ')
+          ? 'java'
+          : 'javaw'
+      // 与后端启动命令共用的 Java 选择规则保持一致，输入时立即更新显示。
+      return command.replace(/^(nohup\s+)?(?:"[^"]*"|\S+)/, (_match, prefix) => (prefix || '') + java)
+    },
     filePath() {
       return (this.temp.whitelistDirectory || '') + (this.temp.lib || '')
     }

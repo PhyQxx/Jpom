@@ -84,9 +84,9 @@ public class NodeProjectInfoModel extends BaseWorkspaceModel {
      */
     private String javaExtDirsCp;
     /**
-     * Jar 模式指定运行的 jar 文件全路径
+     * Java 可执行文件绝对路径；留空使用系统默认 Java。
      */
-    private String jarPath;
+    private String javaPath;
     /**
      * 项目自动启动
      */
@@ -133,8 +133,8 @@ public class NodeProjectInfoModel extends BaseWorkspaceModel {
         return StrUtil.emptyToDefault(javaExtDirsCp, StrUtil.EMPTY);
     }
 
-    public String jarPath() {
-        return StrUtil.trim(StrUtil.emptyToDefault(jarPath, StrUtil.EMPTY));
+    public String javaPath() {
+        return StrUtil.trim(StrUtil.emptyToDefault(javaPath, StrUtil.EMPTY));
     }
 
     public boolean outGivingProject() {

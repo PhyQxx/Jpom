@@ -72,6 +72,16 @@ public class ManageEditProjectController extends BaseAgentController {
         // 运行模式
         RunMode runMode = projectInfo.getRunMode();
         Assert.notNull(runMode, I18nMessageUtil.get("i18n.select_run_mode.5a5d"));
+        String javaPath = projectInfo.javaPath();
+        if (StrUtil.isNotEmpty(javaPath)) {
+            Assert.state(FileUtil.isAbsolutePath(javaPath), "Java 路径必须是绝对路径");
+            Assert.state(!javaPath.matches(".*[\\r\\n\\t\"'`$;&|<>%!*?].*"), "Java 路径不能包含 shell 特殊字符");
+            File javaFile = FileUtil.file(javaPath);
+            Assert.state(javaFile.isFile(), "Java 可执行文件不存在，请填写完整路径（含 bin/java）");
+            Assert.state(javaFile.getName().matches("java(w)?(\\.exe)?"), "请指定 java 可执行文件，而不是 jar 打包工具");
+            Assert.state(javaFile.canExecute(), "Java 文件没有执行权限");
+            projectInfo.setJavaPath(javaPath);
+        }
         // 监测
         if (runMode == RunMode.ClassPath || runMode == RunMode.JavaExtDirsCp) {
             Assert.hasText(projectInfo.mainClass(), I18nMessageUtil.get("i18n.class_path_and_java_ext_dirs_cp_required.7557"));
@@ -80,14 +90,6 @@ public class ManageEditProjectController extends BaseAgentController {
             }
         } else if (runMode == RunMode.Jar || runMode == RunMode.JarWar) {
             projectInfo.setMainClass(StrUtil.EMPTY);
-            if (runMode == RunMode.Jar && StrUtil.isNotEmpty(projectInfo.jarPath())) {
-                Assert.state(FileUtil.isAbsolutePath(projectInfo.jarPath()),
-                    I18nMessageUtil.get("i18n.need_configure_absolute_path.f2e6") + projectInfo.jarPath());
-                Assert.state(!projectInfo.jarPath().contains(StrUtil.SPACE),
-                    I18nMessageUtil.get("i18n.project_path_no_spaces.263c"));
-                Assert.state(StrUtil.endWithIgnoreCase(projectInfo.jarPath(), FileUtil.JAR_FILE_EXT),
-                    I18nMessageUtil.get("i18n.invalid_jar_file.e80a"));
-            }
         } else if (runMode == RunMode.Link) {
             String linkId = projectInfo.getLinkId();
             Assert.hasText(linkId, I18nMessageUtil.get("i18n.link_id_required.5dc7"));
@@ -213,7 +215,7 @@ public class ManageEditProjectController extends BaseAgentController {
             exits.setDslContent(projectInfo.getDslContent());
             exits.setDslEnv(projectInfo.getDslEnv());
             exits.setJavaExtDirsCp(projectInfo.javaExtDirsCp());
-            exits.setJarPath(projectInfo.jarPath());
+            exits.setJavaPath(projectInfo.javaPath());
             exits.setLogCharset(projectInfo.getLogCharset());
             if (runMode == RunMode.Link) {
                 // 如果是链接模式
