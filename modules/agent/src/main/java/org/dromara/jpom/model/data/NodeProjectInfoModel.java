@@ -84,6 +84,10 @@ public class NodeProjectInfoModel extends BaseWorkspaceModel {
      */
     private String javaExtDirsCp;
     /**
+     * Jar 模式指定运行的 jar 文件全路径
+     */
+    private String jarPath;
+    /**
      * 项目自动启动
      */
     private Boolean autoStart;
@@ -127,6 +131,10 @@ public class NodeProjectInfoModel extends BaseWorkspaceModel {
 
     public String javaExtDirsCp() {
         return StrUtil.emptyToDefault(javaExtDirsCp, StrUtil.EMPTY);
+    }
+
+    public String jarPath() {
+        return StrUtil.trim(StrUtil.emptyToDefault(jarPath, StrUtil.EMPTY));
     }
 
     public boolean outGivingProject() {

@@ -288,6 +288,10 @@
         >
           <a-input v-model:value="temp.mainClass" :placeholder="$t('i18n_ef800ed466')" />
         </a-form-item>
+        <a-form-item v-show="temp.runMode === 'Jar'" :label="$t('i18n_62c7964148')" name="jarPath">
+          <template #help>{{ $t('i18n_9a7dfbd911') }}</template>
+          <a-input v-model:value="temp.jarPath" :placeholder="$t('i18n_3f05c3fd0e')" />
+        </a-form-item>
         <a-form-item
           v-show="
             (javaModes.includes(temp.runMode) && temp.runMode === 'JavaExtDirsCp') ||

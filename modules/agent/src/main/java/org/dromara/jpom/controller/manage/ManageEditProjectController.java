@@ -80,6 +80,14 @@ public class ManageEditProjectController extends BaseAgentController {
             }
         } else if (runMode == RunMode.Jar || runMode == RunMode.JarWar) {
             projectInfo.setMainClass(StrUtil.EMPTY);
+            if (runMode == RunMode.Jar && StrUtil.isNotEmpty(projectInfo.jarPath())) {
+                Assert.state(FileUtil.isAbsolutePath(projectInfo.jarPath()),
+                    I18nMessageUtil.get("i18n.need_configure_absolute_path.f2e6") + projectInfo.jarPath());
+                Assert.state(!projectInfo.jarPath().contains(StrUtil.SPACE),
+                    I18nMessageUtil.get("i18n.project_path_no_spaces.263c"));
+                Assert.state(StrUtil.endWithIgnoreCase(projectInfo.jarPath(), FileUtil.JAR_FILE_EXT),
+                    I18nMessageUtil.get("i18n.invalid_jar_file.e80a"));
+            }
         } else if (runMode == RunMode.Link) {
             String linkId = projectInfo.getLinkId();
             Assert.hasText(linkId, I18nMessageUtil.get("i18n.link_id_required.5dc7"));
@@ -205,6 +213,7 @@ public class ManageEditProjectController extends BaseAgentController {
             exits.setDslContent(projectInfo.getDslContent());
             exits.setDslEnv(projectInfo.getDslEnv());
             exits.setJavaExtDirsCp(projectInfo.javaExtDirsCp());
+            exits.setJarPath(projectInfo.jarPath());
             exits.setLogCharset(projectInfo.getLogCharset());
             if (runMode == RunMode.Link) {
                 // 如果是链接模式

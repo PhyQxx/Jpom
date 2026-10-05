@@ -410,7 +410,8 @@ public abstract class AbstractProjectCommander implements ProjectCommander {
         }
         File fileLib = projectInfoService.resolveLibFile(nodeProjectInfoModel);
         File[] files = fileLib.listFiles();
-        if (files == null || files.length == 0) {
+        boolean useCustomJar = originalModel.getRunMode() == RunMode.Jar && StrUtil.isNotEmpty(originalModel.jarPath());
+        if (!useCustomJar && (files == null || files.length == 0)) {
             return I18nMessageUtil.get("i18n.no_files_in_project_directory.108e");
         }
         //
@@ -431,7 +432,7 @@ public abstract class AbstractProjectCommander implements ProjectCommander {
             }
         } else if (checkRunMode == RunMode.Jar || checkRunMode == RunMode.JarWar) {
 
-            List<File> fileList = this.listJars(checkRunMode, fileLib);
+            List<File> fileList = this.listJars(originalModel, fileLib);
             if (fileList.isEmpty()) {
                 return String.format(I18nMessageUtil.get("i18n.missing_package_in_root_dir.8bab"), checkRunMode.name(), checkRunMode.name());
             }
@@ -862,6 +863,21 @@ public abstract class AbstractProjectCommander implements ProjectCommander {
     }
 
     /**
+     * 获取项目需要运行的 jar 文件。Jar 模式配置了全路径时优先使用指定文件，
+     * 未配置时保留扫描项目目录的兼容逻辑。
+     *
+     * @param nodeProjectInfoModel 项目
+     * @param path                 项目目录
+     * @return jar 文件列表
+     */
+    protected List<File> listJars(NodeProjectInfoModel nodeProjectInfoModel, File path) {
+        if (nodeProjectInfoModel.getRunMode() == RunMode.Jar && StrUtil.isNotEmpty(nodeProjectInfoModel.jarPath())) {
+            return Collections.singletonList(FileUtil.file(nodeProjectInfoModel.jarPath()));
+        }
+        return this.listJars(nodeProjectInfoModel.getRunMode(), path);
+    }
+
+    /**
      * 拼接java 执行的jar路径
      *
      * @param nodeProjectInfoModel 项目
@@ -869,7 +885,7 @@ public abstract class AbstractProjectCommander implements ProjectCommander {
      */
     protected String getClassPathLib(NodeProjectInfoModel nodeProjectInfoModel, String lib) {
         RunMode runMode = nodeProjectInfoModel.getRunMode();
-        List<File> files = this.listJars(runMode, lib);
+        List<File> files = this.listJars(nodeProjectInfoModel, FileUtil.file(lib));
         if (CollUtil.isEmpty(files)) {
             return "";
         }
