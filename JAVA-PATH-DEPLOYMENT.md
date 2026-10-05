@@ -1,5 +1,19 @@
 # 自定义 Java 路径：需求更正与部署
 
+## 2026-10-05 启动前校验修复
+
+Jar/JarWar 启动前不再在 Agent JVM 中 loadClass 应用主类，改为验证 ZIP、Manifest、Main-Class 和对应类文件存在；应用字节码兼容性由项目所选 Java 的实际启动负责。避免 Java 11 Agent 在执行 Java 21 项目命令之前抛出 UnsupportedClassVersionError。
+
+- 4 项 JUnit 回归测试在 Java 8 运行通过，覆盖新字节码（61/65/100）、缺失 Manifest/主类属性/主类文件、损坏归档和 Java 路径命令回归。
+- 服务器 Java 11.0.2 使用修复后实际 Agent 类只读校验 pnkx-admin.jar，返回 PASS；没有执行应用主类或启动业务进程。
+- 只更新 Agent：`/vol1/docker/jpom/jpom-agent/lib/Agent-2.11.12.1-jar-preflight.jar`，SHA-256 `de0c7afa2f22ecf877247a21b7c2172054ccd215be176b84f50724f963084c19`。
+- 切换前停止 Agent 并完整备份到 `/vol1/docker/jpom/backups/20261005-jar-preflight/jpom-agent`。Server/H2 未停机、未替换。
+- 部署后 Agent/Server 健康接口返回 200，23 个项目保留；project.json 和 agent_authorize.json 与备份逐字节一致；业务进程 1184181（pnkx-admin）、1742984 未变化。
+- 最终两个 systemd 单元均 active；运行中的 Agent PID 1216825 确认使用 jar-preflight 包；workspace_env_var.json 和 conf 目录文件与备份逐字节一致。只读 probe 已移到备份目录保存。
+- 回滚：停止 jpom-agent 单元及 Agent.sh stop -s，确认 Agent 进程停止，复制本次备份的 lib/run.bin 回原目录，再启动 jpom-agent。不要恢复或覆盖业务数据。
+
+以下为较早一次 Java 路径功能部署记录，其运行包名称与业务 PID 不代表最新部署。
+
 2026-10-05 将原“自定义 JAR 全路径”更正为“自定义 Java 可执行文件全路径”。官方源码基线和服务器版本仍为 2.11.12.1（34dd258c8f428f35b76d4ae7bf2e674c41b8bb30）。
 
 ## 使用

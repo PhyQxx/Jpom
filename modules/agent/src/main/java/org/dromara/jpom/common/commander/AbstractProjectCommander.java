@@ -451,14 +451,19 @@ public abstract class AbstractProjectCommander implements ProjectCommander {
     private static String checkJar(File jarFile) {
         try (JarFile jarFile1 = new JarFile(jarFile)) {
             Manifest manifest = jarFile1.getManifest();
-            Attributes attributes = manifest.getMainAttributes();
-            String mainClass = attributes.getValue(Attributes.Name.MAIN_CLASS);
-            if (mainClass == null) {
+            if (manifest == null) {
                 return jarFile.getAbsolutePath() + I18nMessageUtil.get("i18n.main_class_attribute_not_found.93e8");
             }
-            try (JarClassLoader jarClassLoader = JarClassLoader.load(jarFile)) {
-                jarClassLoader.loadClass(mainClass);
-            } catch (ClassNotFoundException notFound) {
+            Attributes attributes = manifest.getMainAttributes();
+            String mainClass = attributes.getValue(Attributes.Name.MAIN_CLASS);
+            if (StrUtil.isBlank(mainClass)) {
+                return jarFile.getAbsolutePath() + I18nMessageUtil.get("i18n.main_class_attribute_not_found.93e8");
+            }
+            // Inspect the archive without loading application classes into the Agent JVM.
+            // The configured project Java may support newer bytecode than the Agent Java.
+            String mainClassEntry = mainClass.trim().replace('.', '/') + ".class";
+            if (jarFile1.getJarEntry(mainClassEntry) == null
+                || jarFile1.getJarEntry(mainClassEntry).isDirectory()) {
                 return jarFile.getAbsolutePath() + I18nMessageUtil.get("i18n.main_class_not_found.b4b7") + mainClass;
             }
         } catch (Exception e) {
